@@ -1,17 +1,3 @@
-typedef struct sourcefile_t {
-  char *name;
-  char *data;
-} sourcefile_t;
-
-typedef struct token_t {
-  char *label;
-} token_t;
-
-typedef struct tokens_t {
-  int count;
-  token_t *token;
-} tokens_t;
-
 enum tokentype_t {
   TOKTYPE_NONE,
   TOKTYPE_ALPHA_UPPER,
@@ -27,3 +13,19 @@ enum tokentype_t {
   TOKTYPE_LEFT_BRACE,
   TOKTYPE_RIGHT_BRACE
 };
+
+typedef struct token_t {
+  char label;
+  enum tokentype_t type;
+} token_t;
+
+typedef struct tokens_t {
+  int count;
+  token_t **token;
+} tokens_t;
+
+typedef struct sourcefile_t {
+  char *name;
+  char *data;
+  tokens_t *tokens;
+} sourcefile_t;

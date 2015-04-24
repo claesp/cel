@@ -6,9 +6,7 @@
 const int MAJOR = 0;
 const int MINOR = 1;
 
-int
-loadfile(sourcefile_t *src)
-{
+int loadfile(sourcefile_t *src) {
   printf("about to load file '%s'\n", src->name);
   
   FILE *fp = NULL;
@@ -42,8 +40,7 @@ loadfile(sourcefile_t *src)
   return 0;
 }
 
-int
-classify_token(int token) {
+int classify_token(int token) {
   if(token > 47 && token < 58) {
     return TOKTYPE_NUMERIC;
   } else if(token > 64 && token < 91) {
@@ -77,8 +74,7 @@ classify_token(int token) {
   }
 }
 
-int
-tokenize(sourcefile_t *src) {
+int tokenize(sourcefile_t *src) {
   if(src->data == NULL) {
     printf("filedata for '%s' is null\n", src->name);
     return 1;
@@ -88,18 +84,22 @@ tokenize(sourcefile_t *src) {
   tokens->count = strlen(src->data);
   
   for(int i = 0; i < tokens->count; i++) {
+    tokens->token[i] = (token_t *)malloc(sizeof(token_t));
     enum tokentype_t token_type = classify_token(src->data[i]);
-    printf("%c: %d\n", (char)src->data[i], token_type);
+
+    tokens->token[i]->label = (char)src->data[i];
+    tokens->token[i]->type = token_type;
+
+    //printf("%c: %d\n", (char)src->data[i], token_type);
+    //printf("%c: %d\n", tokens->token[i]->label, tokens->token[i]->type);
   }
 
-  free(tokens);
+  src->tokens = tokens;
   
   return 0;
 }
 
-int
-main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
   printf("cel v.%d.%d.0\n", MAJOR, MINOR);
 
   for(int i = 1; i < argc; i++) {
@@ -116,6 +116,9 @@ main(int argc, char **argv)
       printf("failed to tokenize '%s'\n", srcfile->name);
     }
 
+    printf("available tokens: %d\n", srcfile->tokens->count);
+
+    free(srcfile->tokens);
     free(srcfile->data);
     free(srcfile);
   }
