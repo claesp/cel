@@ -17,11 +17,13 @@ enum tokentype_t {
 typedef struct token_t {
   char label;
   enum tokentype_t type;
+  int pos;
+  int row;
 } token_t;
 
 typedef struct tokens_t {
   int count;
-  token_t **token;
+  token_t *token;
 } tokens_t;
 
 typedef struct sourcefile_t {

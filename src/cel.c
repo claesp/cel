@@ -80,18 +80,34 @@ int tokenize(sourcefile_t *src) {
     return 1;
   }
 
+  int token_size_bytes = sizeof(token_t) * strlen(src->data);
+  
+  printf("allocating memory for tokens (%d bytes)\n", token_size_bytes);
   tokens_t *tokens = (tokens_t *)malloc(sizeof(tokens_t));
+  tokens->token = (token_t *)malloc(token_size_bytes);
   tokens->count = strlen(src->data);
+
+  int pos = 1;
+  int row = 1;
   
   for(int i = 0; i < tokens->count; i++) {
-    tokens->token[i] = (token_t *)malloc(sizeof(token_t));
-    enum tokentype_t token_type = classify_token(src->data[i]);
+    char current = (char)src->data[i];
+        
+    token_t token;
+    token.label = current;
+    token.type = classify_token(token.label);
+    token.pos = pos;
+    token.row = row;
+    tokens->token[i] = token;
 
-    tokens->token[i]->label = (char)src->data[i];
-    tokens->token[i]->type = token_type;
+    pos++;
 
-    //printf("%c: %d\n", (char)src->data[i], token_type);
-    //printf("%c: %d\n", tokens->token[i]->label, tokens->token[i]->type);
+    if(current == '\n') {
+      row++;
+      pos = 1;
+    }
+    
+    printf("%d: %p\n", i, &tokens->token[i]);
   }
 
   src->tokens = tokens;
@@ -117,6 +133,11 @@ int main(int argc, char **argv) {
     }
 
     printf("available tokens: %d\n", srcfile->tokens->count);
+
+    for(int i = 0; i < srcfile->tokens->count; i++) {
+      token_t token = srcfile->tokens->token[i];
+      printf("%d: token: %c: %d (%d,%d)\n", i, token.label, token.type, token.row, token.pos);
+    }
 
     free(srcfile->tokens);
     free(srcfile->data);

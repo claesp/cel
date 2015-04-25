@@ -1,5 +1,6 @@
 #!/bin/sh
 gcc -std=c99 \
     -Wall \
+    -ggdb \
     -o bin/cel \
     src/cel.c
