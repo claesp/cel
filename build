@@ -3,4 +3,6 @@ gcc -std=c99 \
     -Wall \
     -ggdb \
     -o bin/cel \
-    src/cel.c
+    src/cel.c \
+    src/lexer.c \
+    src/parser.c

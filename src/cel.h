@@ -1,3 +1,22 @@
+enum lextype_t {
+  LEXTYPE_NONE,
+  LEXTYPE_ALPHANUMERIC,
+  LEXTYPE_WHITESPACE,
+  LEXTYPE_DOT,
+  LEXTYPE_NEWLINE,
+  LEXTYPE_COLON,
+  LEXTYPE_EQUALS,
+  LEXTYPE_SEMICOLON,
+  LEXTYPE_PLUS,
+  LEXTYPE_LEFT_BRACE,
+  LEXTYPE_RIGHT_BRACE
+};
+
+enum tokentype_t {
+  TOKEN_NONE,
+  TOKEN_IDENTIFIER
+};
+
 typedef struct pos_t {
   int col;
   int row;
@@ -32,3 +51,8 @@ typedef struct sourcefile_t {
   lexchars_t *lexchars;
   tokens_t *tokens;
 } sourcefile_t;
+
+int classify_lexchar(int character);
+int lexify_chars(sourcefile_t *src);
+int tokenize(sourcefile_t *src);
+int parse(sourcefile_t *src);
