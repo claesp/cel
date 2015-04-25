@@ -14,7 +14,7 @@ int loadfile(sourcefile_t *src) {
 
   if(fp == NULL) {
     printf("failed to open file '%s'\n", src->name);
-    return 1;
+    return 0;
   }
 
   fseek(fp, 0, SEEK_END);
@@ -24,20 +24,20 @@ int loadfile(sourcefile_t *src) {
   src->data = (char *)malloc(sizeof(char) * filesize);
   if(src->data == NULL) {
     printf("unable to allocate %ld bytes of memory", (sizeof(char) * filesize));
-    return 2;
+    return 0;
   }
 
   size_t readsize = fread(src->data, 1, filesize, fp);
   if(readsize != filesize) {
     printf("unable to read enough bytes\n");
-    return 3;
+    return 0;
   }
 
   fclose(fp);
 
   printf("loaded file '%s'\n", src->name);
 
-  return 0;
+  return 1;
 }
 
 int classify_token(int token) {
@@ -74,10 +74,10 @@ int classify_token(int token) {
   }
 }
 
-int tokenize(sourcefile_t *src) {
+int tokenize_types(sourcefile_t *src) {
   if(src->data == NULL) {
     printf("filedata for '%s' is null\n", src->name);
-    return 1;
+    return 0;
   }
 
   int token_size_bytes = sizeof(token_t) * strlen(src->data);
@@ -112,7 +112,15 @@ int tokenize(sourcefile_t *src) {
 
   src->tokens = tokens;
   
-  return 0;
+  return 1;
+}
+
+int tokenize(sourcefile_t *src) {
+  if(src->tokens->count == 0) {
+    printf("no available tokens in '%s'\n", src->name);
+  }
+  
+  return 1;
 }
 
 int main(int argc, char **argv) {
@@ -124,19 +132,24 @@ int main(int argc, char **argv) {
     sourcefile_t *srcfile = (sourcefile_t *)malloc(sizeof(sourcefile_t));
     srcfile->name = argv[i];
 
-    if(loadfile(srcfile)) {
+    if(!loadfile(srcfile)) {
       printf("failed to load '%s'\n", srcfile->name);
+      return 1;
     }
 
-    if(tokenize(srcfile)) {
-      printf("failed to tokenize '%s'\n", srcfile->name);
+    if(!tokenize_types(srcfile)) {
+      printf("failed to tokenize types '%s'\n", srcfile->name);
+      return 2;
     }
-
-    printf("available tokens: %d\n", srcfile->tokens->count);
 
     for(int i = 0; i < srcfile->tokens->count; i++) {
       token_t token = srcfile->tokens->token[i];
       printf("%d: token: %c: %d (%d,%d)\n", i, token.label, token.type, token.row, token.pos);
+    }
+
+    if(!tokenize(srcfile)) {
+      printf("failed to tokenize '%s'\n", srcfile->name);
+      return 3;
     }
 
     free(srcfile->tokens);
