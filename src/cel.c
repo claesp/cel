@@ -2,6 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include "types.h"
+#include "lexer.h"
+#include "parser.h"
+
+#define TRUE  1
+#define FALSE 0
 
 const int MAJOR = 0;
 const int MINOR = 1;
@@ -40,89 +45,6 @@ int loadfile(sourcefile_t *src) {
   return 1;
 }
 
-int classify_token(int token) {
-  if(token > 47 && token < 58) {
-    return TOKTYPE_NUMERIC;
-  } else if(token > 64 && token < 91) {
-    return TOKTYPE_ALPHA_UPPER;
-  } else if(token > 96 && token < 123) {
-    return TOKTYPE_ALPHA_LOWER;
-  }
-
-  switch(token) {
-  case ' ':
-  case '\t':
-    return TOKTYPE_WHITESPACE;
-  case '\n':
-    return TOKTYPE_NEWLINE;
-  case '.':
-    return TOKTYPE_DOT;
-  case ':':
-    return TOKTYPE_COLON;
-  case '=':
-    return TOKTYPE_EQUALS;
-  case ';':
-    return TOKTYPE_SEMICOLON;
-  case '+':
-    return TOKTYPE_PLUS;
-  case '{':
-    return TOKTYPE_LEFT_BRACE;
-  case '}':
-    return TOKTYPE_RIGHT_BRACE;
-  default:
-    return TOKTYPE_NONE;
-  }
-}
-
-int tokenize_types(sourcefile_t *src) {
-  if(src->data == NULL) {
-    printf("filedata for '%s' is null\n", src->name);
-    return 0;
-  }
-
-  int token_size_bytes = sizeof(token_t) * strlen(src->data);
-  
-  printf("allocating memory for tokens (%d bytes)\n", token_size_bytes);
-  tokens_t *tokens = (tokens_t *)malloc(sizeof(tokens_t));
-  tokens->token = (token_t *)malloc(token_size_bytes);
-  tokens->count = strlen(src->data);
-
-  int pos = 1;
-  int row = 1;
-  
-  for(int i = 0; i < tokens->count; i++) {
-    char current = (char)src->data[i];
-        
-    token_t token;
-    token.label = current;
-    token.type = classify_token(token.label);
-    token.pos = pos;
-    token.row = row;
-    tokens->token[i] = token;
-
-    pos++;
-
-    if(current == '\n') {
-      row++;
-      pos = 1;
-    }
-    
-    printf("%d: %p\n", i, &tokens->token[i]);
-  }
-
-  src->tokens = tokens;
-  
-  return 1;
-}
-
-int tokenize(sourcefile_t *src) {
-  if(src->tokens->count == 0) {
-    printf("no available tokens in '%s'\n", src->name);
-  }
-  
-  return 1;
-}
-
 int main(int argc, char **argv) {
   printf("cel v.%d.%d.0\n", MAJOR, MINOR);
 
@@ -137,14 +59,14 @@ int main(int argc, char **argv) {
       return 1;
     }
 
-    if(!tokenize_types(srcfile)) {
-      printf("failed to tokenize types '%s'\n", srcfile->name);
+    if(!lexify_chars(srcfile)) {
+      printf("failed to lexify characters '%s'\n", srcfile->name);
       return 2;
     }
 
-    for(int i = 0; i < srcfile->tokens->count; i++) {
-      token_t token = srcfile->tokens->token[i];
-      printf("%d: token: %c: %d (%d,%d)\n", i, token.label, token.type, token.row, token.pos);
+    for(int i = 0; i < srcfile->lexchars->count; i++) {
+      lexchar_t lexchar = srcfile->lexchars->lexchar[i];
+      printf("%d: lexchar: %c: %d (%d,%d)\n", i, lexchar.label, lexchar.type, lexchar.position.row, lexchar.position.col);
     }
 
     if(!tokenize(srcfile)) {
@@ -152,7 +74,13 @@ int main(int argc, char **argv) {
       return 3;
     }
 
+    for(int i =0; i < srcfile->tokens->count; i++) {
+      token_t token = srcfile->tokens->token[i];
+      printf("%d: token: %s\n", i, token.label);
+    }
+
     free(srcfile->tokens);
+    free(srcfile->lexchars);
     free(srcfile->data);
     free(srcfile);
   }
