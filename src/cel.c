@@ -3,9 +3,6 @@
 #include <string.h>
 #include "cel.h"
 
-#define TRUE  1
-#define FALSE 0
-
 const int MAJOR = 0;
 const int MINOR = 1;
 
@@ -17,7 +14,7 @@ int loadfile(sourcefile_t *src) {
 
   if(fp == NULL) {
     printf("failed to open file '%s'\n", src->name);
-    return 0;
+    return FALSE;
   }
 
   fseek(fp, 0, SEEK_END);
@@ -27,20 +24,20 @@ int loadfile(sourcefile_t *src) {
   src->data = (char *)malloc(sizeof(char) * filesize);
   if(src->data == NULL) {
     printf("unable to allocate %ld bytes of memory", (sizeof(char) * filesize));
-    return 0;
+    return FALSE;
   }
 
   size_t readsize = fread(src->data, 1, filesize, fp);
   if(readsize != filesize) {
-    printf("unable to read enough bytes\n");
-    return 0;
+    printf("unable to read enough bytes from file '%s'\n", src->name);
+    return FALSE;
   }
 
   fclose(fp);
 
   printf("loaded file '%s'\n", src->name);
 
-  return 1;
+  return TRUE;
 }
 
 int main(int argc, char **argv) {
@@ -57,14 +54,9 @@ int main(int argc, char **argv) {
       return 1;
     }
 
-    if(!lexify_chars(srcfile)) {
+    if(!lexify(srcfile)) {
       printf("failed to lexify characters '%s'\n", srcfile->name);
       return 2;
-    }
-
-    for(int i = 0; i < srcfile->lexchars->count; i++) {
-      lexchar_t lexchar = srcfile->lexchars->lexchar[i];
-      printf("%d: lexchar: %c: %d (%d,%d)\n", i, lexchar.label, lexchar.type, lexchar.position.row, lexchar.position.col);
     }
 
     if(!tokenize(srcfile)) {
@@ -74,7 +66,11 @@ int main(int argc, char **argv) {
 
     for(int i =0; i < srcfile->tokens->count; i++) {
       token_t token = srcfile->tokens->token[i];
-      printf("%d: token: %s\n", i, token.label);
+      printf("%d: token: %s: %d\n", i, token.label, token.type);
+    }
+
+    if(!parse(srcfile)) {
+      printf("failed to parse '%s'\n", srcfile->name);
     }
 
     free(srcfile->tokens);

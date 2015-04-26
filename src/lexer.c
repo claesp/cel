@@ -3,9 +3,6 @@
 #include <string.h>
 #include "cel.h"
 
-#define TRUE  1
-#define FALSE 0
-
 int classify_lexchar(int character) {
   if(character > 47 && character < 58) {         /* numbers */
     return LEXTYPE_ALPHANUMERIC;
@@ -40,10 +37,10 @@ int classify_lexchar(int character) {
   }
 }
 
-int lexify_chars(sourcefile_t *src) {
+int lexify(sourcefile_t *src) {
   if(src->data == NULL) {
     printf("filedata for '%s' is null\n", src->name);
-    return 0;
+    return FALSE;
   }
 
   int character_size_bytes = sizeof(lexchar_t) * strlen(src->data);
@@ -74,23 +71,29 @@ int lexify_chars(sourcefile_t *src) {
       row++;
       pos = 1;
     }
-    
-    printf("%d: %p\n", i, &lexchars->lexchar[i]);
   }
 
   src->lexchars = lexchars;
   
-  return 1;
+  return TRUE;
 }
 
-int classify_token(int character) {
-  return 1;
+int classify_token(char *label) {
+  if(strcmp(label, ":") == 0) {
+    return TOKEN_COLON;
+  } else if(strcmp(label, "=") == 0) {
+    return TOKEN_EQUALS;
+  } else if(strcmp(label, ";") == 0) {
+    return TOKEN_END_OF_STATEMENT;
+  } else {
+    return TOKEN_NONE;
+  }
 }
 
 int tokenize(sourcefile_t *src) {
   if(src->lexchars->count == 0) {
     printf("no available tokens in '%s'\n", src->name);
-    return 0;
+    return FALSE;
   }
 
   tokens_t *tokens = (tokens_t *)malloc(sizeof(tokens_t));
@@ -118,6 +121,7 @@ int tokenize(sourcefile_t *src) {
 	token.label[j] = lexchar.label;
       }
       token.label[token_size + 1] = '\0';
+      token.type = classify_token(token.label);
 
       lexchar_t lexchar_start = src->lexchars->lexchar[token_start];
       lexchar_t lexchar_end = src->lexchars->lexchar[token_end];
@@ -131,7 +135,6 @@ int tokenize(sourcefile_t *src) {
 	tokens->token[token_count] = token;
       }
 
-      printf("found token at %d to %d: '%s' (from %d:%d to %d:%d)\n", token_start, token_end, token.label, token.start.row, token.start.col, token.end.row, token.end.col);
       token_start = i;
       token_count++;
     }
@@ -140,5 +143,5 @@ int tokenize(sourcefile_t *src) {
   tokens->count = token_count;
   src->tokens = tokens;
     
-  return 1;
+  return TRUE;
 }

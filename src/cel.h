@@ -1,3 +1,6 @@
+#define TRUE  1
+#define FALSE 0
+
 enum lextype_t {
   LEXTYPE_NONE,
   LEXTYPE_ALPHANUMERIC,
@@ -14,7 +17,10 @@ enum lextype_t {
 
 enum tokentype_t {
   TOKEN_NONE,
-  TOKEN_IDENTIFIER
+  TOKEN_IDENTIFIER,
+  TOKEN_COLON,
+  TOKEN_EQUALS,
+  TOKEN_END_OF_STATEMENT
 };
 
 typedef struct pos_t {
@@ -53,6 +59,8 @@ typedef struct sourcefile_t {
 } sourcefile_t;
 
 int classify_lexchar(int character);
-int lexify_chars(sourcefile_t *src);
-int tokenize(sourcefile_t *src);
+int classify_token(char *label);
+int lexify(sourcefile_t *src);
+int loadfile(sourcefile_t *src);
 int parse(sourcefile_t *src);
+int tokenize(sourcefile_t *src);
