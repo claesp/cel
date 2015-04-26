@@ -20,7 +20,12 @@ enum tokentype_t {
   TOKEN_IDENTIFIER,
   TOKEN_COLON,
   TOKEN_EQUALS,
-  TOKEN_END_OF_STATEMENT
+  TOKEN_END_OF_STATEMENT,
+  TOKEN_START_OF_BLOCK,
+  TOKEN_END_OF_BLOCK,
+  TOKEN_WHITESPACE,
+  TOKEN_ADD,
+  TOKEN_NEWLINE
 };
 
 typedef struct pos_t {
@@ -58,9 +63,11 @@ typedef struct sourcefile_t {
   tokens_t *tokens;
 } sourcefile_t;
 
-int classify_lexchar(int character);
-int classify_token(char *label);
-int lexify(sourcefile_t *src);
-int loadfile(sourcefile_t *src);
-int parse(sourcefile_t *src);
-int tokenize(sourcefile_t *src);
+int classify_lexchar(int);
+int classify_token(char *);
+char *display_tokentype(int);
+int is_whitespace(char *);
+int lexify(struct sourcefile_t *);
+int loadfile(struct sourcefile_t *);
+int parse(struct sourcefile_t *);
+int tokenize(struct sourcefile_t *);

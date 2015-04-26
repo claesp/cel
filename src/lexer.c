@@ -78,15 +78,65 @@ int lexify(sourcefile_t *src) {
   return TRUE;
 }
 
-int classify_token(char *label) {
-  if(strcmp(label, ":") == 0) {
+char *display_tokentype(int tokentype) {
+  switch(tokentype) {
+  case TOKEN_NONE:
+    return "TOKEN_NONE";
+  case TOKEN_IDENTIFIER:
+    return "TOKEN_IDENTIFIER";
+  case TOKEN_COLON:
+    return "TOKEN_COLON";
+  case TOKEN_EQUALS:
+    return "TOKEN_EQUALS";
+  case TOKEN_END_OF_STATEMENT:
+    return "TOKEN_END_OF_STATEMENT";
+  case TOKEN_START_OF_BLOCK:
+    return "TOKEN_START_OF_BLOCK";
+  case TOKEN_END_OF_BLOCK:
+    return "TOKEN_END_OF_BLOCK";
+  case TOKEN_WHITESPACE:
+    return "TOKEN_WHITESPACE";
+  case TOKEN_ADD:
+    return "TOKEN_ADD";
+  case TOKEN_NEWLINE:
+    return "TOKEN_NEWLINE";
+  default:
+    return "UNKNOWN";
+  }
+}
+
+int is_whitespace(char *text) {
+  int ws = FALSE;
+  for(int i = 0; i < strlen(text); i++) {
+    if((char)text[i] == ' ') {
+      ws = TRUE;
+    } else {
+      ws = FALSE;
+    }
+  }
+
+  return ws;
+}
+
+int classify_token(char *tokenlabel) {
+  if(strcmp(tokenlabel, ":") == 0) {
     return TOKEN_COLON;
-  } else if(strcmp(label, "=") == 0) {
+  } else if(strcmp(tokenlabel, "=") == 0) {
     return TOKEN_EQUALS;
-  } else if(strcmp(label, ";") == 0) {
+  } else if(strcmp(tokenlabel, ";") == 0) {
     return TOKEN_END_OF_STATEMENT;
+  } else if(strcmp(tokenlabel, "{") == 0) {
+    return TOKEN_START_OF_BLOCK;
+  } else if(strcmp(tokenlabel, "}") == 0) {
+    return TOKEN_END_OF_BLOCK;
+  } else if(strcmp(tokenlabel, "+") == 0) {
+    return TOKEN_ADD;
+  } else if(strcmp(tokenlabel, "\n") == 0) {
+    return TOKEN_NEWLINE;
+  } else if(is_whitespace(tokenlabel)) {
+    return TOKEN_WHITESPACE;
   } else {
-    return TOKEN_NONE;
+    return TOKEN_IDENTIFIER;
   }
 }
 
@@ -98,7 +148,11 @@ int tokenize(sourcefile_t *src) {
 
   tokens_t *tokens = (tokens_t *)malloc(sizeof(tokens_t));
   size_t token_size_bytes = sizeof(token_t);
+  printf("allocating initial memory for tokens (%d bytes)\n", (int)token_size_bytes);
   tokens->token = (token_t *)malloc(token_size_bytes);
+  if(tokens->token == NULL) {
+    printf("out of memory when allocating initial memory for tokens (%d bytes)\n", (int)token_size_bytes);
+  }
 
   int token_count = 0;
   int token_start = 0;
@@ -129,10 +183,13 @@ int tokenize(sourcefile_t *src) {
       token.end = lexchar_end.position;
 
       token_size_bytes = sizeof(token_t) * (token_count + 1);
+      printf("reallocating memory for tokens (%d bytes)\n", (int)token_size_bytes);
       token_t *ext_token = (token_t *)realloc(tokens->token, token_size_bytes);
       if(ext_token != NULL) {
 	tokens->token = ext_token;
 	tokens->token[token_count] = token;
+      } else {
+	printf("out of memory when allocating for tokens (%d bytes)\n", (int)token_size_bytes);
       }
 
       token_start = i;
