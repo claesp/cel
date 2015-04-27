@@ -64,11 +64,6 @@ int main(int argc, char **argv) {
       return 3;
     }
 
-    for(int i =0; i < srcfile->tokens->count; i++) {
-      token_t token = srcfile->tokens->token[i];
-      printf("%d: token: %s: %s (%d)\n", i, token.label, display_tokentype(token.type), token.type);
-    }
-
     if(!parse(srcfile)) {
       printf("failed to parse '%s'\n", srcfile->name);
     }
