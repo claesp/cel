@@ -9,30 +9,15 @@ int parse(sourcefile_t *src) {
     return 0;
   }
 
-  for(int i = 0; i < src->tokens->count; i++) {
-    int curr = i;
-    /*int prev = curr - 1;
-      int next = curr + 1;*/
-    token_t curr_token;
-    /*
-    token_t prev_token;
-    token_t next_token;
-    
-    curr_token = src->tokens->token[curr];
-    if(curr != 0) {
-      prev_token = src->tokens->token[prev];
-    }
-    if(next != src->tokens->count) {
-      next_token = src->tokens->token[next];
-    }
-    */
+  int curr = 0;
+  while(curr != src->tokens->count) {
+    int next = curr + 1;
+    int prev = curr - 1;
 
-    curr_token = src->tokens->token[curr];
-    
-    if(curr_token.type == TOKEN_IDENTIFIER) {
-    } else if(curr_token.type == TOKEN_WHITESPACE) {
-    }
+    printf("curr: %d, next: %d, prev: %d\n", curr, next, prev);
+
+    curr++;
   }
-  
+
   return 1;
 }
